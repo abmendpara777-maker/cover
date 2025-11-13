@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alpha Aim – Ironing Board Cover Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background:#f5f5f5;
+      margin:0;
+      padding:20px;
+      color:#222;
+    }
+    h1 {
+      text-align:center;
+      margin-bottom:20px;
+    }
+    .container {
+      max-width:900px;
+      margin:0 auto;
+      background:#fff;
+      padding:20px;
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    }
+    .row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:16px;
+    }
+    .field {
+      flex:1 1 220px;
+      display:flex;
+      flex-direction:column;
+    }
+    label {
+      font-size:0.9rem;
+      margin-bottom:4px;
+    }
+    input, select {
+      padding:8px;
+      border-radius:4px;
+      border:1px solid #ccc;
+      font-size:0.95rem;
+    }
+    .section-title {
+      margin-top:20px;
+      margin-bottom:8px;
+      font-weight:bold;
+      border-bottom:1px solid #eee;
+      padding-bottom:4px;
+    }
+    button {
+      margin-top:16px;
+      padding:10px 20px;
+      background:#0077cc;
+      border:none;
+      border-radius:4px;
+      color:#fff;
+      font-size:1rem;
+      cursor:pointer;
+    }
+    button:hover {
+      background:#005fa1;
+    }
+    .results {
+      margin-top:20px;
+      padding:12px 16px;
+      background:#f0f8ff;
+      border-radius:6px;
+      border:1px solid #c7e0ff;
+      font-size:0.95rem;
+      line-height:1.5;
+    }
+    .results strong {
+      display:block;
+      margin-top:4px;
+    }
+    .note {
+      font-size:0.85rem;
+      color:#666;
+      margin-top:8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Alpha Aim – Cover & Cost Calculator</h1>
+
+    <div class="section-title">Fabric Details</div>
+    <div class="row">
+      <div class="field">
+        <label for="fabricWidth">Fabric width (raw bolt, in inches)</label>
+        <select id="fabricWidth">
+          <option value="44">44 inch (≈111.76 cm)</option>
+          <option value="60">60 inch (≈152.40 cm)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fabricLength">Total fabric length you have (metres)</label>
+        <input type="number" step="0.01" id="fabricLength" placeholder="e.g. 10" />
+      </div>
+    </div>
+
+    <div class="note">
+      Cover size assumed: <strong>145 cm × 45 cm</strong> (finished cover).
+    </div>
+
+    <div class="section-title">Costs</div>
+    <div class="row">
+      <div class="field">
+        <label for="fabricCost">Fabric cost per metre (INR)</label>
+        <input type="number" step="0.01" id="fabricCost" placeholder="e.g. 120" />
+      </div>
+      <div class="field">
+        <label for="feltCost">Felt pad cost per metre (INR)</label>
+        <input type="number" step="0.01" id="feltCost" placeholder="e.g. 80" />
+      </div>
+      <div class="field">
+        <label for="canvasCost">Canvas sheet cost per metre (INR)</label>
+        <input type="number" step="0.01" id="canvasCost" placeholder="e.g. 60" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="rubberCost">Elastic / rubber cost per cover (INR)</label>
+        <input type="number" step="0.01" id="rubberCost" placeholder="e.g. 10" />
+      </div>
+      <div class="field">
+        <label for="extraCost">Additional cost per cover (INR)</label>
+        <input type="number" step="0.01" id="extraCost" placeholder="Labour, packing etc." />
+      </div>
+    </div>
+
+    <button type="button" onclick="calculate()">Calculate</button>
+
+    <div id="results" class="results" style="display:none;"></div>
+  </div>
+
+  <script>
+    function calculate() {
+      const widthInch = parseFloat(document.getElementById('fabricWidth').value);
+      const fabricLengthM = parseFloat(document.getElementById('fabricLength').value || 0);
+
+      if (!fabricLengthM || fabricLengthM <= 0) {
+        alert('Please enter total fabric length in metres.');
+        return;
+      }
+
+      // Segment rules from your cutting logic
+      let segmentLengthM, coversPerSegment;
+      if (widthInch === 44) {
+        segmentLengthM = 1.5;   // 1.5 m gives 2 covers
+        coversPerSegment = 2;
+      } else {
+        segmentLengthM = 1.10;  // 1.10 m gives 2 covers
+        coversPerSegment = 2;
+      }
+
+      const segments     = Math.floor(fabricLengthM / segmentLengthM);
+      const totalCovers  = segments * coversPerSegment;
+      const usedLengthM  = segments * segmentLengthM;
+      const leftoverM    = fabricLengthM - usedLengthM;
+
+      const metresPerCover = segmentLengthM / coversPerSegment; // 0.75 or 0.55
+
+      // Costs
+      const fabricCostPerM   = parseFloat(document.getElementById('fabricCost').value || 0);
+      const feltCostPerM     = parseFloat(document.getElementById('feltCost').value || 0);
+      const canvasCostPerM   = parseFloat(document.getElementById('canvasCost').value || 0);
+      const rubberCostPerCov = parseFloat(document.getElementById('rubberCost').value || 0);
+      const extraCostPerCov  = parseFloat(document.getElementById('extraCost').value || 0);
+
+      const fabricCostPerCover  = metresPerCover * fabricCostPerM;
+      const feltCostPerCover    = metresPerCover * feltCostPerM;
+      const canvasCostPerCover  = metresPerCover * canvasCostPerM;
+
+      const materialCostPerCover = fabricCostPerCover + feltCostPerCover + canvasCostPerCover;
+      const totalCostPerCover    = materialCostPerCover + rubberCostPerCov + extraCostPerCov;
+
+      // NEW: total cost for all covers from this fabric length
+      const totalManufacturingCost = totalCovers * totalCostPerCover;
+
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.style.display = 'block';
+
+      if (totalCovers === 0) {
+        resultsDiv.innerHTML = `
+          <strong>Cover Output</strong>
+          Fabric width: <b>${widthInch}"</b><br>
+          Total fabric length: <b>${fabricLengthM.toFixed(2)} m</b><br>
+          Not enough length to make one full cover with the current cutting rule.
+        `;
+        return;
+      }
+
+      resultsDiv.innerHTML = `
+        <strong>Cover Output</strong>
+        Fabric width: <b>${widthInch}"</b><br>
+        Total fabric length: <b>${fabricLengthM.toFixed(2)} m</b><br>
+        Segment used per batch: <b>${segmentLengthM.toFixed(2)} m → ${coversPerSegment} covers</b><br>
+        Full segments: <b>${segments}</b><br>
+        <strong>Total covers you can make: ${totalCovers}</strong><br>
+        Fabric length used: <b>${usedLengthM.toFixed(2)} m</b>, leftover: <b>${leftoverM.toFixed(2)} m</b><br><br>
+
+        <strong>Cost per Cover</strong>
+        Fabric used per cover: <b>${metresPerCover.toFixed(2)} m</b> → INR ${fabricCostPerCover.toFixed(2)}<br>
+        Felt pad per cover: <b>${metresPerCover.toFixed(2)} m</b> → INR ${feltCostPerCover.toFixed(2)}<br>
+        Canvas sheet per cover: <b>${metresPerCover.toFixed(2)} m</b> → INR ${canvasCostPerCover.toFixed(2)}<br>
+        Elastic / rubber per cover: INR ${rubberCostPerCov.toFixed(2)}<br>
+        Extra cost per cover: INR ${extraCostPerCov.toFixed(2)}<br>
+        <strong>Total cost to make one cover: INR ${totalCostPerCover.toFixed(2)}</strong><br><br>
+
+        <strong>Total cost to make all ${totalCovers} covers: INR ${totalManufacturingCost.toFixed(2)}</strong>
+      `;
+    }
+  </script>
+</body>
+</html>
